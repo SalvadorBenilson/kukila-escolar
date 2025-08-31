@@ -1,0 +1,44 @@
+services:
+  db:
+    image: mysql:latest
+    container_name: api-manager-mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-volumes:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: laravel
+    networks:
+      - kukila-network
+
+  laravel-app:
+    build:
+      context: .
+    container_name: api-manager-app
+    volumes:
+      - .:/home/source/main
+    working_dir: /home/source/main
+    networks:
+      - kukila-network
+
+  nginx:
+    build:
+      context: .
+    container_name: api-manager-nginx
+    ports:
+      - "8000:80"
+    depends_on:
+      - laravel-app
+    volumes:
+      - .:/home/source/main
+    networks:
+      - kukila-network
+
+volumes:
+  mysql-volumes:
+    driver: local
+networks:
+  kukila-network:
+    driver: bridge
+    name: kukila-network
